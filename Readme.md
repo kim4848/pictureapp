@@ -1,10 +1,10 @@
 # TODO
 
 [x]Create core 3.1 react project
-[]Add to Git
-[]Create Azure App service
-[]Create Blob Storage
-[]Create CosmosDB
+[x]Add to Git
+[x]Create Azure App service
+[x]Create Blob Storage
+[x]Create CosmosDB
 []Create Picture input in fontend
 []Display uploaded pictures
 []Location input
