@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using pictureuploader.Services;
 
 namespace pictureuploader
 {
@@ -22,6 +23,7 @@ namespace pictureuploader
         {
 
             services.AddControllersWithViews();
+            services.AddSingleton<DBService>();
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>

@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import ImageUploader from "react-images-upload";
-import EXIF from 'exif-js'
-
+import EXIF from "exif-js";
 
 export class Picture extends Component {
   constructor(props) {
@@ -32,13 +31,12 @@ export class Picture extends Component {
     return self.indexOf(value) === index;
   }
 
+  resizeImage = (data, exifData) => {
 
-
-  resizeImage = (data,exifData) => {
+    var data=data.target.result
 
     if (exifData) {
-      console.log(exifData);
-      console.log(EXIF.getTag(this, "Orientation"));
+      console.log(exifData);      
     } else {
       console.log("No EXIF data found in image '" + data.name + "'.");
     }
@@ -46,6 +44,7 @@ export class Picture extends Component {
     var img = document.createElement("img");
 
     img.onload = () => {
+      console.log("load")
       var canvas = document.createElement("canvas");
       var ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0);
@@ -71,9 +70,9 @@ export class Picture extends Component {
       var ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, width, height);
       var dataurl = canvas.toDataURL("image/png");
-      this.handleImageList(dataurl);
+      this.handleImageList({data: dataurl,exifData:exifData} );
     };
-
+    console.log("set data",data)
     img.src = data;
   };
 
@@ -84,51 +83,23 @@ export class Picture extends Component {
 
   onDrop(picture) {
     console.log(picture);
-
-    
     var uniquepictures = picture.filter(this.onlyUnique);
-    var resizeImage=this.resizeImage;
+    var resizeImage = this.resizeImage;
 
     uniquepictures.forEach((x) => {
-
-    
-
-      EXIF.getData(picture[0], function() {
+      EXIF.getData(picture[0], function () {
         console.log("exif");
-        var exifData = EXIF.pretty(this);      
+        var exifData = EXIF.pretty(this);
+
+        console.log( JSON.stringify( EXIF.getAllTags(this)))
 
         const reader = new FileReader();
-        reader.onload = (e) => resizeImage(e,exifData);
+        reader.onload = (e) => resizeImage(e, EXIF.getAllTags(this));
         reader.readAsDataURL(x);
       });
-
-  
     });
     this.clearImage();
   }
-
-  onSizeChanged = (e) => {
-    var size = 0;
-
-    if (e.target.name === "Length") {
-      console.log(this.state.Width);
-      size = this.state.Width * e.target.value;
-    } else {
-      size = this.state.Length * e.target.value;
-    }
-
-    console.log(size);
-
-    var sizeText = size + " m2";
-
-    if (isNaN(size)) {
-      this.setState({ [e.target.name]: e.target.value });
-    } else {
-      var weight = this.calculateWeight(size, this.state.Height);
-
-      this.setState({ [e.target.name]: e.target.value, Size: Math.round(size, -1), SizeText: sizeText.toString(), Weight: weight });
-    }
-  };
 
   handleImageList = (data) => {
     var images = this.props.images;
@@ -136,13 +107,14 @@ export class Picture extends Component {
     if (exists >= 0) {
       console.log("already exists");
     } else {
-      images.push({ id: "", imageName: data });
+      images.push({ id: "", imageData: data.data,exifData:data.exifData });
+      console.log("Handle before update")
       this.props.onUpdatedImages(images);
     }
   };
 
   render() {
-    return <ImageUploader ref={this.nameField} withIcon={false} buttonText="Tilføj billeder" maxFileSize="15242880" onChange={this.onDrop} imgExtension={[".jpg", "jpeg", ".gif", ".png", ".gif"]} withLabel={false} fileContainerStyle={this.controlStyles} />;
+    return <ImageUploader ref={this.nameField} withIcon={false} buttonText="Tilføj billeder" maxFileSize={15242880} onChange={this.onDrop} imgExtension={[".jpg", "jpeg", ".gif", ".png", ".gif"]} withLabel={false} fileContainerStyle={this.controlStyles} />;
   }
 }
 
