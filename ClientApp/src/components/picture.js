@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import ImageUploader from "react-images-upload";
+import EXIF from 'exif-js'
+
 
 export class Picture extends Component {
   constructor(props) {
@@ -10,7 +12,7 @@ export class Picture extends Component {
       images: [],
     };
     this.onDrop = this.onDrop.bind(this);
-    this.handleTakePhoto = this.handleTakePhoto.bind();
+    this.resizeImage = this.resizeImage.bind();
     this.myRef = React.createRef();
     this.nameField = React.createRef();
   }
@@ -30,11 +32,17 @@ export class Picture extends Component {
     return self.indexOf(value) === index;
   }
 
-  handleTakePhoto = (dataUri, name, type) => {
-    this.resizeImage(dataUri.target.result);
-  };
 
-  resizeImage = (data) => {
+
+  resizeImage = (data,exifData) => {
+
+    if (exifData) {
+      console.log(exifData);
+      console.log(EXIF.getTag(this, "Orientation"));
+    } else {
+      console.log("No EXIF data found in image '" + data.name + "'.");
+    }
+
     var img = document.createElement("img");
 
     img.onload = () => {
@@ -76,12 +84,25 @@ export class Picture extends Component {
 
   onDrop(picture) {
     console.log(picture);
+
+    
     var uniquepictures = picture.filter(this.onlyUnique);
+    var resizeImage=this.resizeImage;
 
     uniquepictures.forEach((x) => {
-      const reader = new FileReader();
-      reader.onload = (e) => this.handleTakePhoto(e, x.name, x.type);
-      reader.readAsDataURL(x);
+
+    
+
+      EXIF.getData(picture[0], function() {
+        console.log("exif");
+        var exifData = EXIF.pretty(this);      
+
+        const reader = new FileReader();
+        reader.onload = (e) => resizeImage(e,exifData);
+        reader.readAsDataURL(x);
+      });
+
+  
     });
     this.clearImage();
   }
